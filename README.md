@@ -86,10 +86,10 @@ Here is a list of the APIs:
 ## Run (Docker Version)
 
     Get it
-        docker pull pafortin/goaws
+        docker pull richscott/goaws
 
     run
-        docker run -d --name goaws -p 4100:4100 pafortin/goaws
+        docker run -d --name goaws -p 4100:4100 richscott/goaws
 
 
 
