@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/p4tin/goaws/app"
+	"github.com/richscott/goaws/app"
 )
 
 func TestListQueues_POST_NoQueues(t *testing.T) {
@@ -541,6 +541,39 @@ func TestChangeMessageVisibility_POST_SUCCESS(t *testing.T) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected)
 	}
+}
+
+func TestReceiveMessageOnNonExistantQueue(t *testing.T) {
+	done := make(chan struct{}, 0)
+	go PeriodicTasks(1*time.Second, done)
+
+	// receive message
+	req, err := http.NewRequest("POST", "/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	form := url.Values{}
+	form.Add("Action", "ReceiveMessage")
+	form.Add("AttributeName.1", "All")
+	form.Add("QueueUrl", "http://:/queue/no-such-queuee")
+	form.Add("Version", "2012-11-05")
+	form.Add("MaxNumberOfMessages", "10")
+	form.Add("WaitTimeSeconds", "5")
+	req.PostForm = form
+
+	rr := httptest.NewRecorder()
+	http.HandlerFunc(ReceiveMessage).ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got \n%v want %v",
+			status, http.StatusOK)
+	}
+	if ok := strings.Contains(rr.Body.String(), "<Message>"); !ok {
+		t.Fatal("handler should return a message")
+	}
+
+	done <- struct{}{}
 }
 
 func TestRequeueing_VisibilityTimeoutExpires(t *testing.T) {

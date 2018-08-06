@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/p4tin/goaws/app"
-	"github.com/p4tin/goaws/app/common"
+	"github.com/richscott/goaws/app"
+	"github.com/richscott/goaws/app/common"
 	log "github.com/sirupsen/logrus"
 )
 

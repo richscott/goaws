@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"sort"
 
-	"github.com/p4tin/goaws/app"
+	"github.com/richscott/goaws/app"
 	log "github.com/sirupsen/logrus"
 )
 

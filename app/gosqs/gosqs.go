@@ -12,8 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/gorilla/mux"
-	"github.com/p4tin/goaws/app"
-	"github.com/p4tin/goaws/app/common"
+	"github.com/richscott/goaws/app"
+	"github.com/richscott/goaws/app/common"
 )
 
 func init() {
@@ -366,7 +366,14 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 	loops := waitTimeSeconds * 10
 	for loops > 0 {
 		app.SyncQueues.RLock()
-		found := len(app.SyncQueues.Queues[queueName].Messages)-numberOfHiddenMessagesInQueue(*app.SyncQueues.Queues[queueName]) != 0
+
+		var found bool
+		if _, exists := app.SyncQueues.Queues[queueName]; exists {
+			found = len(app.SyncQueues.Queues[queueName].Messages)-numberOfHiddenMessagesInQueue(*app.SyncQueues.Queues[queueName]) != 0
+		} else {
+			found = false
+		}
+
 		app.SyncQueues.RUnlock()
 		if !found {
 			time.Sleep(100 * time.Millisecond)
@@ -376,10 +383,12 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 		}
 
 	}
-	log.Println("Getting Message from Queue:", queueName)
 
 	app.SyncQueues.Lock() // Lock the Queues
-	if len(app.SyncQueues.Queues[queueName].Messages) > 0 {
+
+	_, qExists := app.SyncQueues.Queues[queueName]
+
+	if qExists && len(app.SyncQueues.Queues[queueName].Messages) > 0 {
 		numMsg := 0
 		message = make([]*app.ResultMessage, 0)
 		for i := range app.SyncQueues.Queues[queueName].Messages {
